@@ -17,6 +17,7 @@
   "homepage": "https://github.com/catdad/property-builder",
   "devDependencies": {
     "chai": "^3.5.0",
+    "lodash": "^4.6.1",
     "mocha": "^2.4.5"
   }
 }

@@ -2,6 +2,7 @@
 
 var util = require('util');
 var expect = require('chai').expect;
+var _ = require('lodash');
 
 function get() {
     return require('../index');
@@ -61,7 +62,59 @@ describe('[Builder]', function() {
     hasObject('not', gen);
 });
 
-describe('[And]', function() {
+function testBool(val, descKey, getKey) {
+    var gen = function() {
+        return builder();
+    };
+    
+    describe(util.format('[%s]', getKey), function() {
+        it(util.format('sets the default value of %s', val), function() {
+            var method = _.get(gen(), getKey);
+            var desc = method().description;
+            
+            expect(desc).to.have.property(descKey).and.to.equal(val);
+        });
+    });
+}
+
+function testPositiveBool(descKey, getKey) {
+    testBool(true, descKey, getKey);
+}
+
+function testNegativeBool(descKey, getKey) {
+    testBool(false, descKey, getKey);
+}
+
+var positiveBools = {
+    'enumerable': 'enumerable',
+    'and.enumerable': 'enumerable',
+    'not.and.enumerable': 'enumerable',
+    
+    'writable': 'writable',
+    'and.writable': 'writable',
+    'not.and.writable': 'writable',
+    
+    'configurable': 'configurable',
+    'and.configurable': 'configurable',
+    'not.and.configurable': 'configurable',
+};
+
+_.forEach(positiveBools, testPositiveBool);
+
+var negativeBools = {
+    'not.enumerable': 'enumerable',
+    'and.not.enumerable': 'enumerable',
+    
+    'not.writable': 'writable',
+    'and.not.writable': 'writable',
+    
+    'not.configurable': 'configurable',
+    'and.not.configurable': 'configurable',
+};
+
+_.forEach(negativeBools, testNegativeBool);
+
+describe('[and]', function() {
     var gen = function() {
         return builder().and;
     };
@@ -70,7 +123,7 @@ describe('[And]', function() {
     hasObject('not', gen);
 });
 
-describe('[Not]', function() {
+describe('[not]', function() {
     var gen = function() {
         return builder().not;
     };
