@@ -17,8 +17,8 @@ function Builder(obj, desc) {
     desc = desc || {};
     
     var define = (function(that) {
-        return function define(prop, func) {
-            return defineOnObj(that, prop, func);
+        return function define(prop, val) {
+            return defineOnObj(that, prop, val);
         };
     })(this);
     
@@ -38,7 +38,15 @@ function Builder(obj, desc) {
     }
     
     function writable(val) {
+        delete desc.get;
+        delete desc.set;
+        
         desc.writable = (val === undefined) ? true : !!val;
+        return this;
+    }
+    
+    function value(val) {
+        desc.value = val;
         return this;
     }
     
@@ -48,6 +56,8 @@ function Builder(obj, desc) {
         }
         
         delete desc.writable;
+        delete desc.value;
+        
         desc.get = val;
         return this;
     }
@@ -57,6 +67,8 @@ function Builder(obj, desc) {
         }
         
         delete desc.writable;
+        delete desc.value;
+        
         desc.set = val;
         return this;
     }
@@ -81,13 +93,13 @@ function Builder(obj, desc) {
 
     function and() {
         var andObj = {
-            configurable: configurable,
-            enumerable: enumerable,
-            writable: writable
+            configurable: configurable.bind(this),
+            enumerable: enumerable.bind(this),
+            writable: writable.bind(this)
         };
         
         Object.defineProperty(andObj, 'not', {
-            enumebrale: true,
+            enumerable: true,
             get: function() {
                 return not();
             }
@@ -97,14 +109,15 @@ function Builder(obj, desc) {
     }
     
     function not() {
+        
         var notObj = {
-            configurable: negative(configurable),
-            enumerable: negative(enumerable),
-            writable: negative(writable)
+            configurable: negative(configurable.bind(this)),
+            enumerable: negative(enumerable.bind(this)),
+            writable: negative(writable.bind(this))
         };
         
         Object.defineProperty(notObj, 'and', {
-            enumebable: true,
+            enumerable: true,
             get: function() {
                 return and();
             }
@@ -117,15 +130,16 @@ function Builder(obj, desc) {
     define('configurable', configurable);
     define('enumerable', enumerable);
     define('writable', writable);
+    define('value', value);
     define('get', getter);
     define('set', setter);
 
-    defineOnObj(this, 'and', and());
-    defineOnObj(this, 'not', not());
-    
     define('return', ret);
+
+    defineOnObj(this, 'and', (and.bind(this))());
+    defineOnObj(this, 'not', (not.bind(this))());
     
-    this.desc = desc;
+    this.description = desc;
 }
 
 module.exports = function propertyBuilder(obj) {
