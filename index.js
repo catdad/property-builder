@@ -10,31 +10,30 @@ function defineOnObj(obj, prop, val) {
 
 function Builder(obj, desc) {
     if (!(this instanceof Builder)) {
-        return new Builder(obj);
+        return Builder(obj, desc);
     }
     
+    var builder = {};
     var prop;
     desc = desc || {};
     
-    var define = (function(that) {
-        return function define(prop, val) {
-            return defineOnObj(that, prop, val);
-        };
-    })(this);
+    function define(prop, val) {
+        return defineOnObj(builder, prop, val);
+    }
     
     function property(val) {
         prop = val;
-        return this;
+        return builder;
     }
     
     function configurable(val) {
         desc.configurable = (val === undefined) ? true : !!val;
-        return this;
+        return builder;
     }
     
     function enumerable(val) {
         desc.enumerable = (val === undefined) ? true : !!val;
-        return this;
+        return builder;
     }
     
     function writable(val) {
@@ -42,35 +41,35 @@ function Builder(obj, desc) {
         delete desc.set;
         
         desc.writable = (val === undefined) ? true : !!val;
-        return this;
+        return builder;
     }
     
     function value(val) {
         desc.value = val;
-        return this;
+        return builder;
     }
     
     function getter(val) {
         if (typeof val !== 'function') {
-            return this;
+            return builder;
         }
         
         delete desc.writable;
         delete desc.value;
         
         desc.get = val;
-        return this;
+        return builder;
     }
     function setter(val) {
         if (typeof val !== 'function') {
-            return this;
+            return builder;
         }
         
         delete desc.writable;
         delete desc.value;
         
         desc.set = val;
-        return this;
+        return builder;
     }
     
     function ret() {
@@ -93,9 +92,9 @@ function Builder(obj, desc) {
 
     function and() {
         var andObj = {
-            configurable: configurable.bind(this),
-            enumerable: enumerable.bind(this),
-            writable: writable.bind(this)
+            configurable: configurable,
+            enumerable: enumerable,
+            writable: writable
         };
         
         Object.defineProperty(andObj, 'not', {
@@ -136,10 +135,12 @@ function Builder(obj, desc) {
 
     define('return', ret);
 
-    defineOnObj(this, 'and', (and.bind(this))());
-    defineOnObj(this, 'not', (not.bind(this))());
+    defineOnObj(builder, 'and', and());
+    defineOnObj(builder, 'not', not());
     
-    this.description = desc;
+    builder.description = desc;
+    
+    return builder;
 }
 
 module.exports = function propertyBuilder(obj) {
