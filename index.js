@@ -17,6 +17,16 @@ function Builder(obj, desc) {
     var prop;
     desc = desc || {};
     
+    function descriptionMode() {
+        delete desc.get;
+        delete desc.set;
+    }
+    
+    function accessorMode() {
+        delete desc.writable;
+        delete desc.value;
+    }
+    
     function define(prop, val) {
         return defineOnObj(builder, prop, val);
     }
@@ -37,14 +47,13 @@ function Builder(obj, desc) {
     }
     
     function writable(val) {
-        delete desc.get;
-        delete desc.set;
-        
+        descriptionMode();
         desc.writable = (val === undefined) ? true : !!val;
         return builder;
     }
     
     function value(val) {
+        descriptionMode();
         desc.value = val;
         return builder;
     }
@@ -54,9 +63,7 @@ function Builder(obj, desc) {
             return builder;
         }
         
-        delete desc.writable;
-        delete desc.value;
-        
+        accessorMode();
         desc.get = val;
         return builder;
     }
@@ -65,9 +72,7 @@ function Builder(obj, desc) {
             return builder;
         }
         
-        delete desc.writable;
-        delete desc.value;
-        
+        accessorMode();
         desc.set = val;
         return builder;
     }
