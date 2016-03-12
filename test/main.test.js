@@ -51,7 +51,6 @@ function hasSubMethods(gen) {
     hasMethods(list, gen);
 }
 
-
 describe('[Builder]', function() {
     var gen = function() {
         return builder();
@@ -60,6 +59,30 @@ describe('[Builder]', function() {
     hasAllMethods(gen);
     hasObject('and', gen);
     hasObject('not', gen);
+});
+
+describe('[and]', function() {
+    var gen = function() {
+        return builder().and;
+    };
+
+    hasSubMethods(gen);
+    hasObject('not', gen);
+});
+
+describe('[not]', function() {
+    var gen = function() {
+        return builder().not;
+    };
+    
+    hasSubMethods(gen);
+    hasObject('and', gen);
+    
+    it('negates the default enumerable value', function() {
+        var desc = builder().not.enumerable().description;
+        
+        expect(desc).to.have.property('enumerable').and.to.equal(false);
+    });
 });
 
 function testBool(val, descKey, getKey) {
@@ -113,27 +136,3 @@ var negativeBools = {
 };
 
 _.forEach(negativeBools, testNegativeBool);
-
-describe('[and]', function() {
-    var gen = function() {
-        return builder().and;
-    };
-
-    hasSubMethods(gen);
-    hasObject('not', gen);
-});
-
-describe('[not]', function() {
-    var gen = function() {
-        return builder().not;
-    };
-    
-    hasSubMethods(gen);
-    hasObject('and', gen);
-    
-    it('negates the default enumerable value', function() {
-        var desc = builder().not.enumerable().description;
-        
-        expect(desc).to.have.property('enumerable').and.to.equal(false);
-    });
-});
